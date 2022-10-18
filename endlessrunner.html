@@ -63,14 +63,159 @@
 						<section>
 							<h2> Code snippets</h2>
 							<h3> Player Movement</h3>
-							<img src="images/PlayerMovementScript.png" width="100%" height="100%">
-							<img src="images/70063783b6f5e4cc1bd7a0189f1f3f4f.gif" width="100%" height="100%">
+							<pre><code class="mycode">[Tooltip("How fast the player moves")]
+    [SerializeField] private float speed = 5;
+    [Tooltip("How much the player can move side ways")]
+    [SerializeField] private float sideMovement = 5;
+    [Tooltip("How far the player can move to the sides")]
+    [SerializeField] private float clampValue = 5;
+    [Tooltip("How smooth the side movement is")]
+    [SerializeField] private float sideSmooth = 3;
+    [Tooltip("A multiplier for the side movement")]
+    [SerializeField] private AnimationCurve speedMultiplier;
 
-							<h3> Distance and High-score changer</h3>
-							<img src="images/Distance%20and%20Highscore%20Changer.png" idth="100%" height="100%" class="center">
+    private PlayerControls playerControls;
+    private Rigidbody rb;
+    private float newXPosition;
+    private float xMovement;
+    private Lanes currentLane;
+
+    private void Awake()
+    {
+        playerControls = new PlayerControls();
+        rb = GetComponent<Rigidbody>();
+        currentLane = Lanes.Middle;
+        newXPosition = transform.position.x;
+    }
+
+    private void Update()
+    {
+        if (GameManager.instance.GetGameState() != GameState.Game)
+            return;
+
+        Move();
+    }
+
+    private void Move()
+    {
+        if (playerControls.Player.Left.triggered)
+        {
+            if (currentLane == Lanes.Middle)
+            {
+                newXPosition = -sideMovement;
+                currentLane = Lanes.Left;
+            }
+            else if (currentLane == Lanes.Right)
+            {
+                newXPosition = 0;
+                currentLane = Lanes.Middle;
+            }
+        }
+        if (playerControls.Player.Right.triggered)
+        {
+            if (currentLane == Lanes.Middle)
+            {
+                newXPosition = sideMovement;
+                currentLane = Lanes.Right;
+            }
+            else if (currentLane == Lanes.Left)
+            {
+                newXPosition = 0;
+                currentLane = Lanes.Middle;
+            }
+        }
+
+        xMovement = Mathf.Lerp(xMovement, newXPosition, Time.deltaTime * sideSmooth * speedMultiplier.Evaluate(Time.deltaTime));
+        transform.position = new Vector3(xMovement, transform.position.y, transform.position.z);
+        transform.position = new Vector3(Mathf.Clamp(transform.position.x, -clampValue, clampValue), transform.position.y, transform.position.z);
+    }</code></pre>
+							<img src="images/70063783b6f5e4cc1bd7a0189f1f3f4f.gif" width="100%" height="100%">
+							<h3>Distance + Score + Highscore changer</h3>
+							<pre><code class="mycode">private void Update()
+    {
+        if (p_Time < 3 && GameManager.instance.GetGameState() == GameState.Lost)
+            AchievementManager.instance.EarnAchievement("WATCH THE ROAD");
+
+        if (GameManager.instance.GetGameState() != GameState.Game)
+            return;
+
+        // Will add time to the 2 timers
+        p_Timer += Time.deltaTime;
+        p_Time += Time.deltaTime;
+
+        // Formula used: Distance = speed x time so we will get the distance
+        p_Distance = p_speed * p_Time;
+
+        // Change the time when it is above the given change
+        if (p_Timer > p_PointTime)
+            TimeChanger();
+
+        // Change the highscore when it is above it
+        if (p_DistanceInt > p_HighScore)
+            HighScoreChanger();
+
+        //change the distance when its above 0
+        if (p_Distance > 0.05)
+            DistanceChanger();
+
+        if (p_Distance > 100)
+            AchievementManager.instance.EarnAchievement("Drive");
+        if (p_Distance > 1000)
+            AchievementManager.instance.EarnAchievement("To the horizon");
+    }
+
+    #region Time Changer
+    private void TimeChanger()
+    {
+        // adds a point to the score
+        p_TimerScore++;
+
+        PlayerPrefs.SetInt("Time", p_TimerScore);
+        PlayerPrefs.Save();
+
+        // change the score
+        ChangeTimeText();
+
+        // resets the timer
+        p_Timer = 0f;
+    }
+
+    // change the Time text when it is summoned
+    private void ChangeTimeText()
+    {
+        p_ScoreText.text = p_TimerScore.ToString();
+    }
+    #endregion
+
+    #region Distance and HighScore Changer
+
+    /// Will change the distance given in the update to an int
+    /// So it will be used in the score shown on the screen
+    private void DistanceChanger()
+    {
+        p_DistanceInt = Mathf.RoundToInt(p_Distance);
+
+        PlayerPrefs.SetInt("CurrentDistance", p_DistanceInt);
+        PlayerPrefs.Save();
+
+        p_DistanceText.text = p_DistanceInt + "m";
+    }
+
+    /// Will change the highscore if the distance is higher.
+    /// Will also update when the highscore is beaten
+    /// Will also save the highscore in playerprefs.
+    private void HighScoreChanger()
+    {
+        p_HighScore = p_DistanceInt;
+        p_HighScoreText.text = p_DistanceInt + "m";
+
+        PlayerPrefs.SetInt("HighScore", p_HighScore);
+        PlayerPrefs.Save();
+    }
+    #endregion</code></pre>
 
 							<p>All the code from this project: <br>
-								<a href="https://github.com/OzoOnne/ProjectShowcase/tree/main/Deliver%20Or%20Die" target="_blank" style="color:#1400ff">Github Code</a></p>
+								<a href="https://github.com/OzoOnne/ProjectShowcase/tree/main/Endless%20Runner" target="_blank" style="color:#1400ff">Github Code</a></p>
 						</section>
 
 					</div>

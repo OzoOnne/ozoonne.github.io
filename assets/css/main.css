@@ -61,6 +61,12 @@ input::-moz-focus-inner {
 	padding: 0;
 }
 
+.mycode{
+	background-color: #333;
+
+	color: #f7f7f7;
+}
+
 input, select, textarea {
 	-moz-appearance: none;
 	-webkit-appearance: none;

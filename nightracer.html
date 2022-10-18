@@ -31,7 +31,7 @@
 									<h1>NightRacer</h1>
 								</header>
 								<video width="100%" height="100%" controls autoplay muted>
-									<source src="images/DeliverOrDie.mp4" type="video/mp4">
+									<source src="images/nightracer.mp4" type="video/mp4">
 							</section>
 							<section>
 								<P> <i class="fas fa-cogs"></i>: Unity, <i class="fas fa-language"></i>: C#,
@@ -54,19 +54,108 @@
 								<h2> What did I do in this project?</h2>
 								<P> I got the following tasks: Building GameManager, High-score system, Game loop and UI components such as:
 									Numbers, Lap time, Score and High-score. </P>
-								<p><a href="https://github.com/OzoOnne/ProjectShowcase/tree/main/Deliver%20Or%20Die" target="_blank" style="color:#1400ff">Github Code</a></p>
 								
 							</section>
 						<section>
 							<h2> Code snippets</h2>
-							<h3> UI elements</h3>
-							<img src="images/PauseMenuShortBurn.png" width="100%" height="100%" class="center" alt="">
+							<h3> GameManager</h3>
+							<pre><code class="mycode">/// CheckPause will check if the game is paused
+    /// So yes it will be put on hold
+    /// If not it will not be put on hold
+    private void CheckPause()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape) && m_GameState != GameState.Lost)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
 
-							<h3> Open and Close Door</h3>
-							<img src="images/OpenAndCloseDoor.png" width="100%" height="100%" class="center" alt="">
+            if (m_GameState == GameState.Paused)
+            {
+                // Interface show pause false
+                SetGameState(GameState.Game);
+                Cursor.lockState = CursorLockMode.Locked;
+                Time.timeScale = 1f;
+                Cursor.visible = false;
+                Debug.Log("Game is Unpaused");
+            }
+            else if (m_GameState == GameState.Game)
+            {
+                // inter face show pause true
+                SetGameState(GameState.Paused);
+                Time.timeScale = 0f;
+                Debug.Log("Game is Paused");
+            }
+        }
+    }
 
+    /// Will start the game with the timer and lapsdriven
+    public void StartGame()
+    {
+        M_IsCountingDown = false;
+        m_Timer.M_TimeStarted = true;
+        m_LapsDriven++;
+        m_Particle.Play();
+    }
+
+    /// Set the win.
+    /// Time will be stopped and will be saved in the timesaver script
+    /// Highscore will change if it has a new highscore
+    public void SetWin()
+    {
+        m_Timer.M_TimeStarted = false;
+
+        // TimeSaver
+        TimeSaver.M_Instance.ChangeTimes();
+        TimeSaver.M_Instance.M_TimeInt++;
+
+        // Change highscore if the score is above that
+        if (m_Highscore.M_HighScore == 0)
+            m_Highscore.HighScoreChanger(Mathf.RoundToInt(m_Timer.M_Timer));
+        else if (m_Timer.M_Timer < m_Highscore.M_HighScore)
+            m_Highscore.HighScoreChanger(Mathf.RoundToInt(m_Timer.M_Timer));
+        m_Timer.M_Timer = 0;
+        StartGame();
+
+    }</code></pre>
+							<h3> HighScore</h3>
+							<pre><code class="mycode">public class HighscoreSystem : MonoBehaviour
+{
+    public static HighscoreSystem M_Instance;
+
+    [Header("Timer system")]
+    public int M_HighScore;
+
+    #region Singleton
+    private void Awake()
+    {
+        if (M_Instance != null)
+            Destroy(gameObject);
+        else
+            M_Instance = this;
+    }
+    #endregion
+
+    private void Start()
+    {
+        // Displays the highscore on the screen
+        M_HighScore = PlayerPrefs.GetInt("HighScore");
+    }
+
+
+    //change the highscore when is called upon
+    public void HighScoreChanger(int _Time)
+    {
+        M_HighScore = _Time;
+
+        AudioManger.M_Instance.PLay("NewHighScore");
+        //changes the highscore player prefs
+        PlayerPrefs.SetInt("HighScore", M_HighScore);
+        PlayerPrefs.Save();
+        Debug.Log(M_HighScore);
+    }
+</code></pre>
 							<p>All the code from this project: <br>
-								<a href="https://github.com/OzoOnne/ProjectShowcase/tree/main/Deliver%20Or%20Die" target="_blank" style="color:#1400ff">Github Code</a></p>
+								<a href="https://github.com/OzoOnne/ProjectShowcase/tree/main/Night%20Racer" target="_blank" style="color:#1400ff">Github Code</a></p>
 						</section>
 
 					</div>

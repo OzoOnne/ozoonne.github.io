@@ -60,14 +60,166 @@
 							</section>
 						<section>
 							<h2> Code snippets</h2>
-							<h3> Pause Menu</h3>
-							<img src="images/PauseMenuShortBurn.png" width="100%" height="100%" class="center" alt="">
+							<h3> PickUp script</h3>
+							<pre ><code	class="mycode" >public class PlayerPickUp : MonoBehaviour
+    {
+        private PickUpItem _pickable;
+        public GameObject playerHands;
+        public Transform raycastPoint;
+        public float raycastMaxDistance;
 
-							<h3> Open and Close Door</h3>
-							<img src="images/OpenAndCloseDoor.png" width="100%" height="100%" class="center" alt="">
+        public KeyInventory keyInventory;
+
+        public UnityEvent onItemPickup;
+
+        private InputManager _input;
+
+        [Header("Sounds")]
+        [SerializeField] private SoundManager soundManager;
+        [SerializeField] private string flutePickUpSound;
+        [SerializeField] private string keyPickUpSound;
+
+        private void Start()
+        {
+            _input = InputManager.instance;
+        }
+
+        private void Update()
+        {
+            if (_input.PickupItem())
+            {
+                TryPickUp();
+            }
+        }
+        private void TryPickUp()
+        {
+            if (_pickable)
+            {
+                DropPickedUpItem(_pickable);
+            }
+            else
+            {
+                RaycastHit hit;
+                if (Physics.Raycast(raycastPoint.position, raycastPoint.forward, out hit,raycastMaxDistance))
+                {
+                    _pickable = hit.transform.GetComponent<PickUpItem>();
+                    if (_pickable && _pickable.Flute)
+                    {
+                        soundManager.Play(flutePickUpSound);
+                        _pickable.gameObject.SetActive(false);
+                    }
+                    else if (_pickable && !_pickable.Flute)
+                    {
+                        soundManager.Play(keyPickUpSound);
+                        PickUpItem(_pickable);
+                    }
+                }
+            }
+        }
+
+        private void DropPickedUpItem(PickUpItem item)
+        {
+            _pickable = null;
+            item.transform.SetParent(null);
+
+            if (item.GetComponent<KeyItemController>())
+            {
+                keyInventory.hasMainKey = false;
+                keyInventory.hasBasementKey = false;
+                keyInventory.hasGardenKey = false;
+            }
+
+            item.GetRigidbody.isKinematic = false;
+            item.GetRigidbody.AddForce(item.transform.forward * 3,ForceMode.VelocityChange);
+        }
+
+        private void PickUpItem(PickUpItem item)
+        {
+            item.GetRigidbody.isKinematic = true;
+
+            item.transform.parent = playerHands.transform;
+            item.transform.localPosition = Vector3.zero;
+            item.transform.localEulerAngles = Vector3.zero;
+        }
+    }
+							</code></pre>
+
+							<h3> Open and Close door</h3>
+							<pre ><code	class="mycode" >public class Door : MonoBehaviour
+{
+    public AnimationCurve openSpeedCurve = new AnimationCurve(new Keyframe[] { new Keyframe(0, 1, 0, 0), new Keyframe(0.8f, 1, 0, 0), new Keyframe(1, 0, 0, 0) });
+
+    public float openDistance = 0.58f; //How far should door slide (change direction by entering either a positive or a negative value)
+    public float openSpeedMultiplier = 1.0f; //Increasing this value will make the door open faster
+    public Transform doorLeft; //Door body Transform
+    public Transform doorRight;
+    private bool open = false;
+
+    private Vector3 defaultLeftDoorPosition;
+    private Vector3 currentLeftDoorPosition;
+    private Vector3 defaultRightDoorPosition;
+    private Vector3 currentRightDoorPosition;
+    private float openTime = 0;
+
+    [Header("Sound")]
+    [SerializeField] private SoundManager soundManager;
+    [SerializeField] private string soundName;
+
+    private void Start()
+    {
+        if (doorLeft && doorRight)
+        {
+            defaultLeftDoorPosition = doorLeft.localPosition;
+            defaultRightDoorPosition = doorRight.localPosition;
+        }
+    }
+
+    // Main function
+    private void Update()
+    {
+        if (!doorLeft&&!doorRight)
+            return;
+
+        if (openTime < 1)
+        {
+            openTime += Time.deltaTime * openSpeedMultiplier * openSpeedCurve.Evaluate(openTime);
+        }
+        doorLeft.localPosition = new Vector3(doorLeft.localPosition.x, doorLeft.localPosition.y, Mathf.Lerp(currentLeftDoorPosition.z, defaultLeftDoorPosition.z + (open ? openDistance : 0), openTime));
+        doorRight.localPosition = new Vector3(doorRight.localPosition.x, doorRight.localPosition.y, Mathf.Lerp(currentRightDoorPosition.z, defaultRightDoorPosition.z - (open ? openDistance : 0), openTime));
+
+
+    }
+
+    // Activate the Main function when Player enter the trigger area
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.GetComponent<CharacterController>())
+        {
+            soundManager.Play(soundName);
+            open = true;
+            currentLeftDoorPosition = doorLeft.localPosition;
+            currentRightDoorPosition = doorRight.localPosition;
+            openTime = 0;
+        }
+    }
+
+    // Deactivate the Main function when Player exit the trigger area
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.GetComponent<CharacterController>())
+        {
+            open = false;
+            currentLeftDoorPosition = doorLeft.localPosition;
+            currentRightDoorPosition = doorRight.localPosition;
+            openTime = 0;
+        }
+    }
+}
+}
+							</code></pre>
 
 							<p>All the code from this project: <br>
-								<a href="https://github.com/OzoOnne/ProjectShowcase/tree/main/Deliver%20Or%20Die" target="_blank" style="color:#1400ff">Github Code</a></p>
+								<a href="https://github.com/OzoOnne/ProjectShowcase/tree/main/ShortBurn" target="_blank" style="color:#1400ff">Github Code</a></p>
 						</section>
 
 					</div>

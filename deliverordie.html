@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 	<head>
 		<title>Deliver Or Die</title>
 		<meta charset="utf-8" />
@@ -55,9 +55,75 @@
 								<h2> What did I do in this project?</h2>
 								<P> I have worked on the UI and the Sounds so that the game feels more alive! Also that the whole gameloop is complete
 									so that the player can restart, quit and play again. </P>
-								<p><a href="https://github.com/OzoOnne/ProjectShowcase/tree/main/Deliver%20Or%20Die" target="_blank" style="color:#1400ff">Github Code</a></p>
+								
 								
 							</section>
+						<section>
+							<h2>Code Snippets</h2>
+							<h3>Character Sounds</h3>
+							<pre ><code class="mycode">public class CharacterSound : MonoBehaviour
+{
+    // audio's needed for the character
+    [SerializeField] private AudioSource source;
+    [SerializeField] private AudioClip[] clips;
+
+
+    void Start()
+    {
+        StartCoroutine(PlayAudio());
+    }
+
+   // The ieunemator to play the audio
+   private IEnumerator PlayAudio()
+   {
+        while (true)
+        {
+            yield return new WaitForSeconds(Random.Range(4, 10));
+            source.clip = clips[Random.Range(0, clips.Length)];
+            source.Play();
+            Debug.Log("ping");
+        }
+   }
+}
+							</code></pre>
+							<h3> Pause menu</h3>
+							<pre ><code	class="mycode" >public class PauseMenu : MonoBehaviour
+{
+    private bool GameIsPaused = false;
+    [SerializeField] private GameObject pauseMenuUi;
+
+    void Update()
+    {
+        //game is paused yes or no?
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (GameIsPaused)
+                Resume();
+            else
+                Pause();
+        }
+    }
+
+    //No? then it will continue on this code:
+    public void Resume()
+    {
+        pauseMenuUi.SetActive(false);
+        Time.timeScale = 1f;
+        GameIsPaused = false;
+    }
+
+    //Yes? then it will pause on this code:
+    public void Pause()
+    {
+        pauseMenuUi.SetActive(true);
+        Time.timeScale = 0f;
+        GameIsPaused = true;
+    }
+}
+							</code></pre>
+							<p>All the code from this project: <br>
+								<a href="https://github.com/OzoOnne/ProjectShowcase/tree/main/Deliver%20Or%20Die" target="_blank" style="color:#1400ff">Github Code</a></p>
+						</section>
 
 					</div>
 
